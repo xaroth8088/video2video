@@ -18,7 +18,7 @@ parser.add_argument('--outfile', default='out.mp4', type=str,
 parser.add_argument('--preview', action="store_true",
                     help='generate a short preview video, instead of the full-length video')
 parser.add_argument('--sampler', type=str, default='Euler',
-                    help='which sampler to use (default: Euler')
+                    help='which sampler to use (default: Euler)')
 parser.add_argument('--denoising_strength', type=float, default=0.75,
                     help='how severely to rewrite the video frame (0: return the same frame, 1: return a wholly new '
                          'frame) (default: 0.75)')

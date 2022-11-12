@@ -27,7 +27,7 @@ options:
                         words to de-emphasize when generating frames
   --outfile OUTFILE     filename for the generated file
   --preview             generate a short preview video, instead of the full-length video
-  --sampler SAMPLER     which sampler to use (default: Euler
+  --sampler SAMPLER     which sampler to use (default: Euler)
   --denoising_strength DENOISING_STRENGTH
                         how severely to rewrite the video frame (0: return the same frame, 1: return a wholly new frame) (default: 0.75)
   --seed SEED           the random seed to use for generation (defaults to randomly selected)
