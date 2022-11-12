@@ -1,14 +1,18 @@
 import argparse
-import io
-import requests
 import base64
+import io
+import random
+
 import imageio.v3 as iio
+import requests
 
 parser = argparse.ArgumentParser(description='Proof-of-concept using img2img to make the analog video2video')
 parser.add_argument('path', type=str,
                     help='the path to the video file')
 parser.add_argument('prompt', type=str,
                     help='the prompt to use')
+parser.add_argument('--negative_prompt', type=str,
+                    help='words to de-emphasize when generating frames')
 parser.add_argument('--outfile', default='out.mp4', type=str,
                     help='filename for the generated file')
 parser.add_argument('--preview', action="store_true",
@@ -16,19 +20,29 @@ parser.add_argument('--preview', action="store_true",
 parser.add_argument('--sampler', type=str, default='Euler',
                     help='which sampler to use (default: Euler')
 parser.add_argument('--denoising_strength', type=float, default=0.75,
-                    help='how severely to rewrite the image (0: return the same image, 1: return a wholly new image) (default: 0.75)')
+                    help='how severely to rewrite the video frame (0: return the same frame, 1: return a wholly new '
+                         'frame) (default: 0.75)')
+parser.add_argument('--seed', type=int,
+                    help='the random seed to use for generation (defaults to randomly selected)')
+parser.add_argument('--steps', type=int, default=50,
+                    help='the number of iterations used in video frame generation (default: 50)')
+parser.add_argument('--cfg_scale', type=float, default=7.0,
+                    help='how much freedom the video frame generation has to deviate from the prompt (default: 7.0; '
+                         'higher numbers = more deviation')
+parser.add_argument('--width', type=int, default=512,
+                    help='output width for the generated video (default: 512)')
+parser.add_argument('--height', type=int, default=512,
+                    help='output height for the generated video (default: 512)')
+parser.add_argument('--restore_faces', action="store_true",
+                    help='run face restoration on the generated video frames')
+parser.add_argument('--tiling', action="store_true",
+                    help='generate video frames which will (independently) tile seamlessly')
 
 args = parser.parse_args()
 
-# Things to convert to args later
-seed = 1234
-steps = 50
-cfg_scale = 7.0
-width = 512
-height = 512
-restore_faces = False
-tiling = False
-negative_prompt = None
+seed = random.randint(1, 2147483647)
+if args.seed:
+    seed = args.seed
 
 # Gather some metadata, for giving progress, etc.
 metadata = iio.immeta(args.path, plugin="pyav")
@@ -58,14 +72,16 @@ with iio.imopen(args.outfile, "w", plugin="pyav") as out_file:
             'denoising_strength': args.denoising_strength,
             'sampler_index': args.sampler,
             'seed': seed,
-            'steps': steps,
-            'cfg_scale': cfg_scale,
-            'width': width,
-            'height': height,
-            'restore_faces': restore_faces,
-            'tiling': tiling,
-            'negative_prompt': negative_prompt
+            'steps': args.steps,
+            'cfg_scale': args.cfg_scale,
+            'width': args.width,
+            'height': args.height,
+            'restore_faces': args.restore_faces,
+            'tiling': args.tiling,
+            'negative_prompt': args.negative_prompt
         })
+
+        # Parse the image out of the response
         image_str = response.json()["images"][0]
         image = iio.imread(io.BytesIO(base64.b64decode(image_str)))
 
